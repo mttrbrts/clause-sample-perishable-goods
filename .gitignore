@@ -1,4 +1,6 @@
 .DS_Store
+node_modules
+composer-logs
 contracts/**/log
 contracts/**/node_modules
 contracts/**/composer-logs
