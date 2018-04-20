@@ -21,6 +21,11 @@ export class ComposerPerishableGoodsService {
     importers: []
   };
 
+  private handleSuccess(response) {
+    this.getAllParticipants();
+    this.getAllShipments();
+  }
+
   private handleError(error: HttpErrorResponse) {
     if (error.error instanceof ErrorEvent) {
       // A client-side or network error occurred. Handle it accordingly.
@@ -46,7 +51,7 @@ export class ComposerPerishableGoodsService {
       {
         '$class': 'org.accordproject.perishablegoods.SetupDemo'
       }
-    ).subscribe(data => {}, err => this.handleError(err));
+    ).subscribe(data => this.handleSuccess(data), err => this.handleError(err));
   }
 
   addParticipant(type, email, country, balance) {
@@ -62,7 +67,7 @@ export class ComposerPerishableGoodsService {
             country
         },
         'accountBalance': balance
-    }).subscribe(data => {}, err => this.handleError(err));
+    }).subscribe(data => this.handleSuccess(data), err => this.handleError(err));
   }
 
   getAllParticipants() {
@@ -104,7 +109,7 @@ export class ComposerPerishableGoodsService {
         'importer': 'resource:org.accordproject.perishablegoods.Importer#' + importer,
         smartClause,
       }
-    ).subscribe(data => {}, err => this.handleError(err));
+    ).subscribe(data => this.handleSuccess(data), err => this.handleError(err));
   }
 
   undoSetupDemo() {
@@ -114,35 +119,33 @@ export class ComposerPerishableGoodsService {
     this.http.delete(this.API_HOST + '/Shipper/shipper%40email.com').subscribe(data => {}, err => this.handleError(err));
   }
 
-  sendSensorReading(shipment, temp, humidity) {
+  sendSensorReading(shipmentId, temp, humidity) {
     return this.http.post(this.API_HOST + '/SensorReading', {
       '$class': 'org.accordproject.perishablegoods.SensorReading',
       'centigrade': temp,
       'humidity' : humidity,
-      'shipment': 'resource:org.accordproject.perishablegoods.Shipment#' + shipment.id,
-    }).subscribe(data => {}, err => this.handleError(err));
+      'shipment': 'resource:org.accordproject.perishablegoods.Shipment#' + shipmentId,
+    }).subscribe(data => this.handleSuccess(data), err => this.handleError(err));
   }
 
   public ping() {
     console.log('ping called');
     console.log(this.API_HOST + '/system/ping');
     return this.http.get(this.API_HOST + '/system/ping', httpOptions).subscribe(
-      data => {
-        console.log(data);
-      },
+      data => {},
       err => {
         this.handleError(err);
       }
     );
   }
 
-  sendReceived(shipment) {
-    return this.http.post(this.API_HOST + '/ShipmentReceived', {
-          '$class': 'org.accordproject.perishablegoods.ShipmentReceived',
-          'unitCount': 3000,
-          'shipment': 'resource:org.accordproject.perishablegoods.Shipment#' + shipment.id
-        }
-      );
+  sendReceived(shipmentId) {
+    this.http.post(this.API_HOST + '/ShipmentReceived', {
+        '$class': 'org.accordproject.perishablegoods.ShipmentReceived',
+        'unitCount': 3000,
+        'shipment': 'resource:org.accordproject.perishablegoods.Shipment#' + shipmentId
+      }
+    ).subscribe(data => this.handleSuccess(data), err => this.handleError(err));
   }
 
 }

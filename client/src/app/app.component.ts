@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ComposerPerishableGoodsService } from './composer-perishable-goods.service';
 import {Observable} from 'rxjs/Observable';
+import {ShipmentPipePipe} from './shipment-pipe.pipe';
 
 declare var $: any;
 
@@ -43,7 +44,7 @@ export class AppComponent implements OnInit {
     this.service.undoSetupDemo();
   }
 
-  public submitAddShipmentForm() {
+  public submitAddShipmentForm(event) {
     this.service.addShipment(
       this.shipment.id,
       this.shipment.api,
@@ -61,12 +62,19 @@ export class AppComponent implements OnInit {
     );
   }
 
+  public sendReceived() {
+    // TODO remove upper case hack.
+    const shipmentId = $('#receivedShipmentId').val().toUpperCase();
+    this.service.sendReceived(shipmentId);
+  }
+
   public addReading() {
     console.log('add reading');
     console.log('temp:', this.newTemp);
     console.log('humidity:', this.newHumidity);
-
-    this.service.sendSensorReading(this.shipment, this.newTemp, this.newHumidity);
+    // TODO remove upper case hack.
+    const shipmentId = $('#readingShipmentId').val().toUpperCase();
+    this.service.sendSensorReading(shipmentId, this.newTemp, this.newHumidity);
       // .subscribe(response => {
       //     console.log('reading submitted');
           // $( '.ui.fluid.card:last' ).after(`

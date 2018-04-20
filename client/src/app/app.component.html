@@ -34,9 +34,11 @@
         </div>
         <div class="ui segment" id="step2segment" [hidden]="step!==1">
             <p>This is step 2</p>
-            <button class="ui icon button" (click)="addShipmentModal()"><i class="plus icon"></i>Shipment</button>
             <button class="ui icon button" (click)="addImporterModal()"><i class="plus icon"></i>Importer</button>
             <button class="ui icon button" (click)="addGrowerModal()"><i class="plus icon"></i>Grower </button>
+            <div class="ui hidden divider"></div>
+            <button class="ui icon button" (click)="addShipmentModal()"><i class="plus icon"></i>Shipment</button>
+            <div class="ui hidden divider"></div>
             <button class="ui button" (click)="createDefaultAssets()">Create default assets</button>
             <button class="ui red button" (click)="deleteDefaultAssets()">Delete default assets </button>
             <div class="ui hidden divider"></div>
@@ -51,11 +53,22 @@
                         <div class="header">New Reading</div>
                         <div class="meta"> </div>
                         <div class="description">
-                            <div class="label"> Temperature</div>
-                            <div class="ui range" id="newTemp"></div>
-                            <div class="label"> <span id="display-temp"></span>&deg;C</div><label> Humidity</label>
-                            <div class="ui range" id="newHumidity"></div>
-                            <div class="label"> <span id="display-humidity"></span>%</div>
+                          <div class="ui fluid search selection dropdown"><input type="hidden" name="shipmentId" id="readingShipmentId"/><i class="dropdown icon"></i>
+                            <div class="default text">Select Shipment</div>
+                            <div class="menu">
+                                <div class="item" *ngFor="let s of service.data.shipments">{{s.shipmentId}}</div>
+                            </div>
+                          </div>
+                          <div class="label">Temperature</div>
+                          <div class="ui right labeled input">
+                            <input type="text" [(ngModel)]="newTemp">
+                            <div class="ui basic label">&deg;C</div>
+                          </div>
+                          <div class="label">Humidity</div>
+                          <div class="ui right labeled input">
+                            <input type="text" [(ngModel)]="newHumidity">
+                            <div class="ui basic label">%</div>
+                          </div>                        
                         </div>
                         <div class="extra content">
                             <div class="ui hidden divider"></div>
@@ -71,10 +84,17 @@
             <div class="ui right floated labeled icon button blue" (click)="nextStep()"><i class="right arrow icon"></i>Next</div>
         </div>
         <div class="ui segment" id="step4segment" [hidden]="step!==3">
-            <p>This is step 4</p><button class="ui button" (click)="service.sendReceived(shipment)">Shipment Received</button>
+            <p>This is step 4</p>
+            <div class="ui fluid search selection dropdown"><input type="hidden" name="shipmentId" id="receivedShipmentId"/><i class="dropdown icon"></i>
+              <div class="default text">Select Shipment</div>
+              <div class="menu">
+                  <div class="item" *ngFor="let s of service.data.shipments | shipmentPipe">{{s.shipmentId}}</div>
+              </div>
+            </div>
+            <button class="ui button" (click)="sendReceived()">Shipment Received</button>
             <div class="ui hidden divider"></div>
             <div class="ui labeled icon button" (click)="backStep()"><i class="arrow left icon"></i>Back</div>
-            <div class="ui right floated labeled icon button red" (click)="resetDemo()"><i class="right arrow icon"></i>Reset</div>
+            <div class="ui right floated labeled icon button red" (click)="resetDemo()"><i class="right undo icon"></i>Restart</div>
         </div>
         <div class="ui hidden negative small message" id="errorMessage"><i class="close icon"></i>
             <div class="header">An error occured while communicating with the Blockchain</div>
@@ -85,15 +105,40 @@
         <app-participant-modal [participant]="'Importer'" (closed)="submitAddParticipantForm($event)"></app-participant-modal>  
         <div class="ui segment" >
             <p>Shipments</p>
-            <div *ngFor='let s of service.data.shipments'>{{s.shipmentId}} {{s.status}}</div>
+            <div *ngFor='let s of service.data.shipments' class="ui divided selection list">
+              <a class="item">
+                {{s.shipmentId}} 
+                <div *ngIf="s.status=='IN_TRANSIT'" class="ui orange horizontal label">{{s.status}}</div>
+                <div *ngIf="s.status=='ARRIVED'" class="ui green horizontal label">{{s.status}}</div>
+                <div class="ui label">
+                  <i class="thermometer half icon"></i> {{s.sensorReadings.length}}
+                </div>
+              </a>
+            </div>
         </div>
-        <div class="ui segment" >
-            <p>Growers</p>
-            <div *ngFor='let g of service.data.growers'>{{g.email}}</div>
-        </div>
-        <div class="ui segment" >
-            <p>Importers</p>
-            <div *ngFor='let i of service.data.importers'>{{i.email}}</div>
+        <div class="ui two column grid">
+          <div class="column">
+            <div class="ui segment" >
+                <p>Growers</p>
+                <div *ngFor='let g of service.data.growers' class="ui divided selection list">
+                  <a class="ui image label item">
+                    <img src="assets/images/small/elliot.jpg">
+                    {{g.email}}
+                  </a>
+                </div>
+            </div>
+          </div>
+          <div class="column">
+            <div class="ui segment" >
+                <p>Importers</p>
+                <div *ngFor='let i of service.data.importers' class="ui divided selection list">
+                    <a class="ui image label item">
+                        <img src="assets/images/small/stevie.jpg">
+                        {{i.email}}
+                      </a>
+                </div>
+            </div>
+          </div>
         </div>
     </div>
 </div>

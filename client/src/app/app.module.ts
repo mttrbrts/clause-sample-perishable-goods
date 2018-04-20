@@ -7,13 +7,15 @@ import { ShipmentModalComponent } from './shipment-modal/shipment-modal.componen
 import { ParticipantModalComponent } from './participant-modal/participant-modal.component';
 import { CountrySelectorComponent } from './country-selector/country-selector.component';
 import { FormsModule } from '@angular/forms';
+import { ShipmentPipePipe } from './shipment-pipe.pipe';
 
 @NgModule({
   declarations: [
     AppComponent,
     ShipmentModalComponent,
     ParticipantModalComponent,
-    CountrySelectorComponent
+    CountrySelectorComponent,
+    ShipmentPipePipe
   ],
   imports: [
     BrowserModule,
