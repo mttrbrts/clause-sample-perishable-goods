@@ -1,0 +1,34 @@
+<div class="ui modal" id="newShipmentForm-modal"><i class="close icon"></i>
+  <div class="header">Add a Shipment</div>
+  <div class="content">
+      <div class="description">
+          <form class="ui form">
+              <h4 class="ui dividing header">Shipping Information</h4>
+              <div class="required field"><label>Shipment Reference</label><input type="text" name="id" [(ngModel)]="shipment.id"/></div>
+              <div class="two fields">
+                  <div class="required field"><label>Grower</label>
+                      <div class="ui fluid search selection dropdown"><input type="hidden" name="grower" id="grower" [(ngModel)]="shipment.grower"/><i class="dropdown icon"></i>
+                          <div class="default text">Select Grower</div>
+                          <div class="menu">
+                              <div class="item" *ngFor="let g of data.growers">{{g.email}}</div>
+                          </div>
+                      </div>
+                  </div>
+                  <div class="required field"><label>Importer</label>
+                      <div class="ui fluid search selection dropdown"><input type="hidden" name="importer" id="importer" [(ngModel)]="shipment.importer"/><i class="dropdown icon"></i>
+                          <div class="default text">Select Importer</div>
+                          <div class="menu">
+                              <div class="item" *ngFor="let i of data.importers">{{i.email}}</div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+              <h4 class="ui dividing header">Smart Clause</h4>
+              <div class="required field"><label>API URL</label><input type="text" name="api"  [(ngModel)]="shipment.api"/></div>
+          </form>
+      </div>
+  </div>
+  <div class="actions">
+      <div class="ui positive right labeled icon button" (click)="submitAddShipmentForm()">Submit shipment<i class="checkmark icon"></i></div>
+  </div>
+</div>

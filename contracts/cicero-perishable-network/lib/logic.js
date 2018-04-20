@@ -25,10 +25,9 @@ function payOut(shipmentReceived) {
 
     // set the status of the shipment
     shipment.status = 'ARRIVED';
-    var server = 'https://api.clause.io/api/clauses/5ac61e0d36174c0b99ad4f57/execute?access_token=CHgHb7yfgFp5RsY2QbJ6CyShouMvJHrS84lHzDUdrpzQFelnJFTxmb6s0P6mvi4E';
 
     // execute the smart clause
-    return post( server , shipmentReceived, {permitResourcesForRelationships: true})
+    return post( shipment.smartClause , shipmentReceived, {permitResourcesForRelationships: true})
         .then(function (result) {
             var totalPrice = result.body.totalPrice;
             console.log('Payout: ' + totalPrice);

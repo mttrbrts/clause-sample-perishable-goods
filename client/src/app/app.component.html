@@ -1,0 +1,117 @@
+<div class="ui vertical stripe segment">
+    <div class="ui text container">
+        <div class="ui four top attached steps">
+            <div class="step" id="step1" [ngClass]="{completed:step>0, active:step==0}"><i class="file outline icon"></i>
+                <div class="content">
+                    <div class="title">Step 1</div>
+                    <div class="description">Deploy your contract</div>
+                </div>
+            </div>
+            <div class="step" id="step2" [ngClass]="{completed:step>1, active:step==1}"><i class="ship icon"></i>
+                <div class="content">
+                    <div class="title">Step 2</div>
+                    <div class="description">Start the shipment</div>
+                </div>
+            </div>
+            <div class="step" id="step3" [ngClass]="{completed:step>2, active:step==2}"><i class="thermometer half icon"></i>
+                <div class="content">
+                    <div class="title">Step 3</div>
+                    <div class="description">Submit sensor readings</div>
+                </div>
+            </div>
+            <div class="step" id="step4" [ngClass]="{completed:step>3, active:step==3}"><i class="flag checkered icon"></i>
+                <div class="content">
+                    <div class="title">Step 4</div>
+                    <div class="description">Shipment complete</div>
+                </div>
+            </div>
+        </div>
+        <div class="ui segment" id="step1segment"  [hidden]="step!==0">
+            <p>This is step 1</p>
+            <p>Get your API URL from clause.io</p>
+            <div class="ui hidden divider"></div>
+            <div class="ui right labeled icon button blue" (click)="nextStep()"><i class="right arrow icon"></i>Next</div>
+        </div>
+        <div class="ui segment" id="step2segment" [hidden]="step!==1">
+            <p>This is step 2</p>
+            <button class="ui icon button" (click)="addShipmentModal()"><i class="plus icon"></i>Shipment</button>
+            <button class="ui icon button" (click)="addImporterModal()"><i class="plus icon"></i>Importer</button>
+            <button class="ui icon button" (click)="addGrowerModal()"><i class="plus icon"></i>Grower </button>
+            <button class="ui button" (click)="createDefaultAssets()">Create default assets</button>
+            <button class="ui red button" (click)="deleteDefaultAssets()">Delete default assets </button>
+            <div class="ui hidden divider"></div>
+            <div class="ui labeled icon button" (click)="backStep()"><i class="arrow left icon"></i>Back</div>
+            <div class="ui right floated labeled icon button blue" (click)="nextStep()"><i class="right arrow icon"></i>Next</div>
+        </div>
+        <div class="ui segment" id="step3segment" [hidden]="step!==2">
+            <p>This is step 3</p>
+            <div class="ui two cards">
+                <div class="ui fluid card" id="newReading">
+                    <div class="content">
+                        <div class="header">New Reading</div>
+                        <div class="meta"> </div>
+                        <div class="description">
+                            <div class="label"> Temperature</div>
+                            <div class="ui range" id="newTemp"></div>
+                            <div class="label"> <span id="display-temp"></span>&deg;C</div><label> Humidity</label>
+                            <div class="ui range" id="newHumidity"></div>
+                            <div class="label"> <span id="display-humidity"></span>%</div>
+                        </div>
+                        <div class="extra content">
+                            <div class="ui hidden divider"></div>
+                            <div class="ui buttons">
+                                <div class="ui right floated basic green button" id="addNewReading" (click)="addReading()">Add</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="ui hidden divider"></div>
+            <div class="ui labeled icon button" (click)="backStep()"><i class="arrow left icon"></i>Back</div>
+            <div class="ui right floated labeled icon button blue" (click)="nextStep()"><i class="right arrow icon"></i>Next</div>
+        </div>
+        <div class="ui segment" id="step4segment" [hidden]="step!==3">
+            <p>This is step 4</p><button class="ui button" (click)="service.sendReceived(shipment)">Shipment Received</button>
+            <div class="ui hidden divider"></div>
+            <div class="ui labeled icon button" (click)="backStep()"><i class="arrow left icon"></i>Back</div>
+            <div class="ui right floated labeled icon button red" (click)="resetDemo()"><i class="right arrow icon"></i>Reset</div>
+        </div>
+        <div class="ui hidden negative small message" id="errorMessage"><i class="close icon"></i>
+            <div class="header">An error occured while communicating with the Blockchain</div>
+            <p> </p>
+        </div>
+        <app-shipment-modal [shipment]="shipment" [data]="service.data"  (closed)="submitAddShipmentForm($event)"></app-shipment-modal>
+        <app-participant-modal [participant]="'Grower'"(closed)="submitAddParticipantForm($event)"></app-participant-modal>  
+        <app-participant-modal [participant]="'Importer'" (closed)="submitAddParticipantForm($event)"></app-participant-modal>  
+        <div class="ui segment" >
+            <p>Shipments</p>
+            <div *ngFor='let s of service.data.shipments'>{{s.shipmentId}} {{s.status}}</div>
+        </div>
+        <div class="ui segment" >
+            <p>Growers</p>
+            <div *ngFor='let g of service.data.growers'>{{g.email}}</div>
+        </div>
+        <div class="ui segment" >
+            <p>Importers</p>
+            <div *ngFor='let i of service.data.importers'>{{i.email}}</div>
+        </div>
+    </div>
+</div>
+<div class="ui inverted vertical footer segment">
+    <div class="ui container">
+        <div class="ui stackable inverted divided equal height stackable grid">
+            <div class="three wide column">
+                <h4 class="ui inverted header">About</h4>
+                <div class="ui inverted link list"><a class="item" href="#">Sitemap</a><a class="item" href="#">Contact Us</a><a class="item" href="#">Religious Ceremonies</a><a class="item" href="#">Gazebo Plans</a></div>
+            </div>
+            <div class="three wide column">
+                <h4 class="ui inverted header">Services</h4>
+                <div class="ui inverted link list"><a class="item" href="#">Banana Pre-Order</a><a class="item" href="#">DNA FAQ</a><a class="item" href="#">How To Access</a><a class="item" href="#">Favorite X-Men</a></div>
+            </div>
+            <div class="seven wide column">
+                <h4 class="ui inverted header">Footer Header</h4>
+                <p>Extra space for a call to action inside the footer that could help re-engage users.</p>
+            </div>
+        </div>
+    </div>
+</div>
