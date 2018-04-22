@@ -1,14 +1,16 @@
 {
   "name": "clause-composer-perishable-goods-client",
-  "version": "0.0.0",
-  "license": "MIT",
+  "version": "0.0.1",
+  "license": "Apache2.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build --prod",
     "test": "ng test",
     "lint": "ng lint",
-    "e2e": "ng e2e"
+    "e2e": "ng e2e",
+    "dist": "ng build && cp src/static/manifest.yml src/static/Staticfile dist",
+    "push": "npm run dist && cd dist && bx cf push"
   },
   "private": true,
   "dependencies": {
@@ -29,7 +31,7 @@
     "zone.js": "^0.8.19"
   },
   "devDependencies": {
-    "@angular/cli": "~1.7.4",
+    "@angular/cli": "^1.7.4",
     "@angular/compiler-cli": "^5.2.0",
     "@angular/language-service": "^5.2.0",
     "@types/jasmine": "~2.8.3",

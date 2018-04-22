@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "description": "Track shipments and invoke a Cicero Smart Clause",
   "scripts": {
-    "test": "mocha --recursive --timeout 100000"
+    "test": "mocha --recursive --timeout 100000",
+    "dist": "rm dist/cicero-perishable-network@0.1.0.bna && composer archive create -t dir -n ./ && cp cicero-perishable-network@0.1.0.bna dist && rm cicero-perishable-network@0.1.0.bna"
   },
   "author": "Accord Project",
   "email": "dan@accordproject.io",
@@ -12,6 +13,7 @@
     "async": "^2.6.0",
     "chai": "latest",
     "composer-admin": "0.18.1",
+    "composer-cli": "^0.19.1",
     "composer-client": "0.18.1",
     "composer-common": "0.18.1",
     "composer-connector-embedded": "0.18.1",

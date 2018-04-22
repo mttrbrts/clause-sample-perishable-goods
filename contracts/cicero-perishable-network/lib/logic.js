@@ -27,6 +27,7 @@ function payOut(shipmentReceived) {
     shipment.status = 'ARRIVED';
 
     // execute the smart clause
+    console.log(shipment.smartClause);
     return post( shipment.smartClause , shipmentReceived, {permitResourcesForRelationships: true})
         .then(function (result) {
             var totalPrice = result.body.totalPrice;
@@ -119,7 +120,7 @@ function setupDemo(setupDemo) {
 
     // create the shipment
     var shipment = factory.newResource(NS, 'Shipment', 'SHIP_001');
-    shipment.smartClause = 'perishable-goods/shipping-contract.txt';
+    shipment.smartClause = 'https://api.clause.io/api/clauses/aaaaaaaaaaaaaaaaaaaaaaaa/execute?access_token=TOKEN';
     shipment.status = 'IN_TRANSIT';
     shipment.grower = factory.newRelationship(NS,'Grower', grower.$identifier);
     shipment.importer = factory.newRelationship(NS,'Importer', importer.$identifier);
