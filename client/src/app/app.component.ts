@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { ComposerPerishableGoodsService } from './composer-perishable-goods.service';
 import {Observable} from 'rxjs/Observable';
 import {ShipmentPipePipe} from './shipment-pipe.pipe';
+import * as moment from 'moment';
+import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 
 declare var $: any;
 
@@ -12,128 +14,97 @@ declare var $: any;
 })
 export class AppComponent implements OnInit {
   title = 'Smart Legal Contracts with IBM Blockchain, by Clause';
-  step = 0;
-  newTemp = 5;
-  newHumidity = 53;
-  readings = [];
-  shipment: {id: String, api: String, grower: String, importer: String};
-  importer: {id: String, country: String, balance: number};
-  grower: {id: String, country: String, balance: number};
+  urlStatus = 'UNSET';
 
-  constructor(public service: ComposerPerishableGoodsService) {
-    this.shipment = {
-      id: service.generateShipmentId(),
-      // tslint:disable-next-line:max-line-length
-      api: 'https://api.clause.io/api/clauses/5ac61e0d36174c0b99ad4f57/execute?access_token=CHgHb7yfgFp5RsY2QbJ6CyShouMvJHrS84lHzDUdrpzQFelnJFTxmb6s0P6mvi4E',
-      grower: '',
-      importer: ''
+  constructor(public service: ComposerPerishableGoodsService, private http: HttpClient) {}
+
+
+  public validateClauseURL(event) {
+    console.log('validing URL');
+    this.urlStatus = 'LOADING';
+
+    // Trim any extra whitespace
+    this.service.data.shipment.smartClause = this.service.data.shipment.smartClause.trim();
+
+    // Does it match the regex pattern?
+    const regex = /https:\/\/api\.clause\.io\/api\/clauses\/[0-9a-z]{24}\/execute\?access_token=[0-9a-zA-Z]{64}/g;
+    if (regex.exec(this.service.data.shipment.smartClause) === null) {
+      this.urlStatus = 'INVALID';
+      return;
+    }
+
+    // Does it accept data?
+    const request = {
+      '$class': 'org.accordproject.perishablegoods.ShipmentReceived',
+      'unitCount': 3000,
+      'shipment': {
+          '$class': 'org.accordproject.perishablegoods.Shipment',
+          'shipmentId': 'SHIP_001',
+          'sensorReadings': [
+              {
+                  '$class': 'org.accordproject.perishablegoods.SensorReading',
+                  'centigrade': 2,
+                  'humidity': 80,
+                  'shipment': 'resource:org.accordproject.perishablegoods.Shipment#SHIP_001',
+                  'transactionId': 'a'
+              },
+              {
+                  '$class': 'org.accordproject.perishablegoods.SensorReading',
+                  'centigrade': 5,
+                  'humidity': 90,
+                  'shipment': 'resource:org.accordproject.perishablegoods.Shipment#SHIP_001',
+                  'transactionId': 'b'
+              },
+              {
+                  '$class': 'org.accordproject.perishablegoods.SensorReading',
+                  'centigrade': 15,
+                  'humidity': 65,
+                  'shipment': 'resource:org.accordproject.perishablegoods.Shipment#SHIP_001',
+                  'transactionId': 'c'
+              }
+          ]
+      },
+      'transactionId': '99c64b8a-b3b0-408a-8ec4-7820776cd447',
+      'timestamp': '2018-02-18T11:11:41.264Z'
     };
-    this.importer = {
-      id: service.generateEmail(), country: 'gb', balance: 3000
-    };
-    this.grower = {
-      id: service.generateEmail(), country: 'gb', balance: 3000
-    };
-  }
 
-  public createDefaultAssets() {
-    this.service.setupDemo();
-  }
+    this.http.post(this.service.data.shipment.smartClause, request)
+    .subscribe(response => {
+      this.urlStatus = 'VALID';
+      this.service.addShipment();
 
-  public deleteDefaultAssets() {
-    this.service.undoSetupDemo();
-  }
-
-  public submitAddShipmentForm(event) {
-    this.service.addShipment(
-      this.shipment.id,
-      this.shipment.api,
-      this.shipment.grower,
-      this.shipment.importer
-    );
-  }
-
-  public submitAddParticipantForm(event) {
-    this.service.addParticipant(
-      event.participant,
-      event.email,
-      event.country,
-      event.balance,
-    );
+    }, err => { this.urlStatus = 'INVALID'; });
   }
 
   public sendReceived() {
-    // TODO remove upper case hack.
-    const shipmentId = $('#receivedShipmentId').val().toUpperCase();
-    this.service.sendReceived(shipmentId);
+    this.service.sendReceived();
+  }
+
+
+  public showAddReadingModal() {
+    $('#new-reading-modal')
+      .modal('show')
+    ;
   }
 
   public addReading() {
-    console.log('add reading');
-    console.log('temp:', this.newTemp);
-    console.log('humidity:', this.newHumidity);
-    // TODO remove upper case hack.
-    const shipmentId = $('#readingShipmentId').val().toUpperCase();
-    this.service.sendSensorReading(shipmentId, this.newTemp, this.newHumidity);
-      // .subscribe(response => {
-      //     console.log('reading submitted');
-          // $( '.ui.fluid.card:last' ).after(`
-          //   <div class="ui fluid card">
-          //     <div class="content">
-          //     <div class="header">${new Date()}</div>
-          //       <div class="meta">74972368f01cf55025d9332005b2f659</div>
-          //       <div class="description">
-          //         <div class="ui teal progress" data-percent="${newTemp}" id="temp${readings.length}">
-          //           <div class="bar"></div>
-          //           <div class="label">Temperature</div>
-          //         </div>
-          //         <div class="ui orange progress" data-percent="${newHumidity}" id="humidity${readings.length}">
-          //           <div class="bar"></div>
-          //           <div class="label">Humidity</div>
-          //         </div>
-          //       </div>
-          //     </div>
-          //   </div>
-          // `);
-
-          // $( "#temp"+readings.length ).progress();
-          // $( "#humidity"+readings.length ).progress();
-
-    //       this.readings.push({temp: this.newTemp, humidity: this.newHumidity});
-    //   }
-    // );
+    this.service.sendSensorReading();
   }
 
-  public resetDemo() {
-    this.step = 0;
+  // public addShipmentModal() {
+  //   $('#newShipmentForm-id').val(this.service.generateId());
+  //   $('#newShipmentForm-modal').modal('show');
+  // }
 
-  }
+  // public addImporterModal() {
+  //   $('#newImporterForm-id').val(this.service.generateEmail());
+  //   $('#newImporterForm-modal').modal('show');
+  // }
 
-  public nextStep() {
-    console.log('next step clicked');
-    this.step += 1;
-  }
-
-  public backStep() {
-
-    console.log('back step clicked');
-    this.step -= 1;
-  }
-
-  public addShipmentModal() {
-    $('#newShipmentForm-id').val(this.service.generateShipmentId());
-    $('#newShipmentForm-modal').modal('show');
-  }
-
-  public addImporterModal() {
-    $('#newImporterForm-id').val(this.service.generateEmail());
-    $('#newImporterForm-modal').modal('show');
-  }
-
-  public addGrowerModal() {
-    $('#newGrowerForm-id').val(this.service.generateEmail());
-    $('#newGrowerForm-modal').modal('show');
-  }
+  // public addGrowerModal() {
+  //   $('#newGrowerForm-id').val(this.service.generateEmail());
+  //   $('#newGrowerForm-modal').modal('show');
+  // }
 
     //
   //   resetDemo();
@@ -159,8 +130,14 @@ export class AppComponent implements OnInit {
   //     }
   //   });
 
+
+  public fromNow(date) {
+    return moment(date).fromNow();
+  }
+
   public ngOnInit() {
     $(document).ready(function() {
+
       // fix menu when passed
       $('.masthead')
       .visibility({
@@ -190,7 +167,6 @@ export class AppComponent implements OnInit {
     );
 
     this.service.ping();
-    this.service.getAllParticipants();
-    this.service.getAllShipments();
+    this.service.setupDemo();
   }
 }

@@ -3,27 +3,56 @@ import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http
 
 declare var $: any;
 
-const httpOptions = {
-  headers: new HttpHeaders({
-    'Access-Control-Allow-Origin': '*'
-  })
-};
-
 @Injectable()
 export class ComposerPerishableGoodsService {
 
   constructor(private http: HttpClient) { }
 
   private API_HOST = 'https://composer-rest-server-cicero-perishable-network.mybluemix.net/api';
-  public data = {
-    shipments: [],
-    growers: [],
-    importers: []
+
+  public Status = {
+    NOT_CREATED: 0,
+    CREATED_PARTICIPANTS: 1,
+    CREATING_SHIPMENT: 2,
+    IN_TRANSIT: 3,
+    ARRIVED: 4,
+    FAILED: -1,
   };
 
+  public data = {
+    shipment: {
+      shipmentId: this.generateId(),
+      smartClause: '',
+      status: this.Status.NOT_CREATED,
+      sensorReadings: [],
+      currentTemp: 2,
+      currentHumidity: 75,
+    },
+    grower: {
+      email: 'grower' + this.generateEmail(),
+      accountBalance: 0,
+    },
+    importer: {
+      email: 'importer' + this.generateEmail(),
+      accountBalance: 3000,
+    },
+    historian: []
+  };
+
+  blockHeight = -1;
+  public readingCounter = 0;
+
+  public statusString() {
+    for (const k in this.Status) {
+      if (this.Status[k] === this.data.shipment.status) {
+        return k.replace('_', ' ');
+      }
+    }
+    return 'FAILED';
+  }
+
   private handleSuccess(response) {
-    this.getAllParticipants();
-    this.getAllShipments();
+    this.getHistorian();
   }
 
   private handleError(error: HttpErrorResponse) {
@@ -40,112 +69,154 @@ export class ComposerPerishableGoodsService {
         `body was: ${error.error.message}`);
 
       // tslint:disable-next-line:max-line-length
-      const message = error.error.error.message.replace('Error trying invoke business network. Error: No valid responses from any peers.\nResponse from attempted peer comms was an error: Error: 2 UNKNOWN: error executing chaincode: transaction returned with failure: Error:', '');
-      $('#errorMessage > p').html(message);
-      $('#errorMessage').show();
+      // const message = error.error.error.message.replace('Error trying invoke business network. Error: No valid responses from any peers.\nResponse from attempted peer comms was an error: Error: 2 UNKNOWN: error executing chaincode: transaction returned with failure: Error:', '');
+      // $('#errorMessage > p').html(message);
+      // $('#errorMessage').show();
     }
   }
 
-  setupDemo() {
-    return this.http.post(this.API_HOST + '/SetupDemo',
-      {
-        '$class': 'org.accordproject.perishablegoods.SetupDemo'
-      }
-    ).subscribe(data => this.handleSuccess(data), err => this.handleError(err));
+  public setupDemo() {
+    this.data.importer = this.addParticipant('Importer', () => {
+      this.data.grower = this.addParticipant('Grower', () => {
+        this.data.shipment.status = this.Status.CREATED_PARTICIPANTS;
+      });
+    });
   }
 
-  addParticipant(type, email, country, balance) {
-    console.log(type, email, country, balance);
-    if (type !== 'Importer' && type !== 'Grower' && type !== 'Shipper') {
-      throw Error(`Invalid participant name, ${type}. Choose from Importer, Grower or Shipper`);
+  private addParticipant(type, cb) {
+    let participant;
+    if (type === 'Importer') {
+      participant = this.data.importer;
+    }
+    if (type === 'Grower') {
+      participant = this.data.grower;
     }
 
-    return this.http.post(this.API_HOST + '/' + type, {
-        '$class': 'org.accordproject.perishablegoods.' + type,
-        'email': email,
-        'address': {
-            country
-        },
-        'accountBalance': balance
-    }).subscribe(data => this.handleSuccess(data), err => this.handleError(err));
+    const request = {
+      '$class': 'org.accordproject.perishablegoods.' + type,
+      'email': participant.email,
+      'address': {
+        country: 'gb'
+      },
+      'accountBalance': participant.accountBalance
+    };
+
+    this.http.post(this.API_HOST + '/' + type, request)
+    .subscribe(data => {
+      this.handleSuccess(data);
+      cb();
+    }, err => this.handleError(err));
+
+    return participant;
   }
 
-  getAllParticipants() {
-    this.http.get(this.API_HOST + '/Grower').subscribe(
+  getParticipants() {
+    interface Participant {
+      accountBalance: number;
+    }
+    this.http.get(this.API_HOST + '/Grower/' + (this.data.grower.email)).subscribe(
       data => {
-        this.data.growers = <Array<any>>data;
+        this.data.grower.accountBalance = (<Participant>data).accountBalance;
       }, err => this.handleError(err));
-    this.http.get(this.API_HOST + '/Importer').subscribe(
+    this.http.get(this.API_HOST + '/Importer/' + (this.data.importer.email)).subscribe(
       data => {
-        this.data.importers = <Array<any>>data;
-      }, err => this.handleError(err));
-  }
-
-  getAllShipments() {
-    this.http.get(this.API_HOST + '/Shipment').subscribe(
-      data => {
-        this.data.shipments = <Array<any>>data;
+        this.data.importer.accountBalance = (<Participant>data).accountBalance;
       }, err => this.handleError(err));
   }
 
   // not guaranteed to be unique, but sufficient for our purposes
-  generateShipmentId() {
-    return 'SHIP_' + Math.random().toString(36).substr(2, 9).toUpperCase();
+  public generateId() {
+    return Math.random().toString(36).substr(2, 6);
   }
 
-  generateEmail() {
-    return Math.random().toString(36).substr(2, 7) + '@network';
+  private generateEmail() {
+    return this.generateId() + '@network';
   }
 
-  public addShipment(shipmentId, smartClause, grower, importer) {
-    grower = encodeURIComponent(grower);
-    importer = encodeURIComponent(importer);
+  public addShipment() {
+    this.data.grower.email = encodeURIComponent(this.data.grower.email);
+    this.data.importer.email = encodeURIComponent(this.data.importer.email);
+    this.data.shipment.status = this.Status.CREATING_SHIPMENT;
+    $('#shipment').removeClass('dimmed');
     // console.log(grower);
     return this.http.post(this.API_HOST + '/Shipment', {
         '$class': 'org.accordproject.perishablegoods.Shipment',
-        shipmentId,
+        shipmentId: this.data.shipment.shipmentId,
         'status': 'IN_TRANSIT',
-        'grower': 'resource:org.accordproject.perishablegoods.Grower#' + grower,
-        'importer': 'resource:org.accordproject.perishablegoods.Importer#' + importer,
-        smartClause,
+        'grower': 'resource:org.accordproject.perishablegoods.Grower#' + this.data.grower.email,
+        'importer': 'resource:org.accordproject.perishablegoods.Importer#' + this.data.importer.email,
+        smartClause: this.data.shipment.smartClause,
       }
-    ).subscribe(data => this.handleSuccess(data), err => this.handleError(err));
+    ).subscribe(data => {
+      this.handleSuccess(data);
+      this.data.shipment.status = this.Status.IN_TRANSIT;
+    }, err => {
+      this.handleError(err);
+      this.data.shipment.status = this.Status.FAILED;
+    });
   }
 
-  undoSetupDemo() {
-    this.http.delete(this.API_HOST + '/Shipment/SHIP_001').subscribe(data => {}, err => this.handleError(err));
-    this.http.delete(this.API_HOST + '/Grower/farmer%40email.com').subscribe(data => {}, err => this.handleError(err));
-    this.http.delete(this.API_HOST + '/Importer/supermarket%40email.com').subscribe(data => {}, err => this.handleError(err));
-    this.http.delete(this.API_HOST + '/Shipper/shipper%40email.com').subscribe(data => {}, err => this.handleError(err));
-  }
-
-  sendSensorReading(shipmentId, temp, humidity) {
+  sendSensorReading() {
     return this.http.post(this.API_HOST + '/SensorReading', {
       '$class': 'org.accordproject.perishablegoods.SensorReading',
-      'centigrade': temp,
-      'humidity' : humidity,
-      'shipment': 'resource:org.accordproject.perishablegoods.Shipment#' + shipmentId,
-    }).subscribe(data => this.handleSuccess(data), err => this.handleError(err));
+      'centigrade': this.data.shipment.currentTemp,
+      'humidity' : this.data.shipment.currentHumidity,
+      'shipment': 'resource:org.accordproject.perishablegoods.Shipment#' + this.data.shipment.shipmentId,
+    }).subscribe(data => {
+      this.handleSuccess(data);
+      this.readingCounter += 1;
+    }, err => this.handleError(err));
   }
 
-  public ping() {
-    console.log('ping called');
-    console.log(this.API_HOST + '/system/ping');
-    return this.http.get(this.API_HOST + '/system/ping', httpOptions).subscribe(
-      data => {},
+  public getHistorian() {
+    console.log('historian called');
+    return this.http.get(this.API_HOST + '/system/historian').subscribe(
+      data => {
+        function compare(a, b) {
+          if (a.transactionTimestamp < b.transactionTimestamp) {
+            return -1;
+          } else if (a.transactionTimestamp > b.transactionTimestamp) {
+            return 1;
+          }
+          return 0;
+        }
+        if (this.blockHeight === -1) {
+          this.blockHeight = (<Array<any>>data).length;
+        }
+
+        this.data.historian = (<Array<any>>data).sort(compare);
+        this.data.historian.splice(0, this.blockHeight - 1);
+      },
       err => {
         this.handleError(err);
       }
     );
   }
 
-  sendReceived(shipmentId) {
+  public ping() {
+    console.log('ping called');
+    console.log(this.API_HOST + '/system/ping');
+    return this.http.get(this.API_HOST + '/system/ping').subscribe(
+      data => {
+        this.handleSuccess(data);
+      },
+      err => {
+        this.handleError(err);
+      }
+    );
+  }
+
+  sendReceived() {
     this.http.post(this.API_HOST + '/ShipmentReceived', {
         '$class': 'org.accordproject.perishablegoods.ShipmentReceived',
         'unitCount': 3000,
-        'shipment': 'resource:org.accordproject.perishablegoods.Shipment#' + shipmentId
+        'shipment': 'resource:org.accordproject.perishablegoods.Shipment#' + this.data.shipment.shipmentId
       }
-    ).subscribe(data => this.handleSuccess(data), err => this.handleError(err));
+    ).subscribe(data => {
+      this.handleSuccess(data);
+      this.data.shipment.status = this.Status.ARRIVED;
+      this.getParticipants();
+    }, err => this.handleError(err));
   }
 
 }

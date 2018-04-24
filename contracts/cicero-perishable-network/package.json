@@ -3,8 +3,7 @@
   "version": "0.1.0",
   "description": "Track shipments and invoke a Cicero Smart Clause",
   "scripts": {
-    "test": "mocha --recursive --timeout 100000",
-    "dist": "rm dist/cicero-perishable-network@0.1.0.bna && composer archive create -t dir -n ./ && cp cicero-perishable-network@0.1.0.bna dist && rm cicero-perishable-network@0.1.0.bna"
+    "test": "mocha --recursive --timeout 100000"
   },
   "author": "Accord Project",
   "email": "dan@accordproject.io",
