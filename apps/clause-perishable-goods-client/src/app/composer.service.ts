@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
-import { environment } from '../environments/environment';
 
 declare var $: any;
 
@@ -9,7 +8,7 @@ export class ComposerPerishableGoodsService {
 
   constructor(private http: HttpClient) {}
 
-  private API_HOST = environment.apiUrl + '/api';
+  private API_HOST = '/api';
 
   public Status = {
     NOT_CREATED: 0,
