@@ -7,10 +7,12 @@ source .bluemix/pipeline-CLOUDANT.sh
 source .bluemix/pipeline-BLOCKCHAIN.sh
 
 export CONTRACTS=$(ls contracts)
+export APPS=$(ls apps)
 if ls contracts/*/package.json > /dev/null 2>&1
 then
     export HAS_COMPOSER_CONTRACTS=true
 fi
+export REST_SERVER_URLS={}
 
 function deploy_contracts {
     for CONTRACT in ${CONTRACTS}
@@ -114,6 +116,8 @@ function deploy_composer_rest_server {
     cf set-env ${CF_APP_NAME} COMPOSER_NAMESPACES required
     cf set-env ${CF_APP_NAME} COMPOSER_WEBSOCKETS true
     cf start ${CF_APP_NAME}
+    REST_SERVER_URL=$(cf app ${CF_APP_NAME} | grep routes: | awk '{print $2}')
+    export REST_SERVER_URLS=$(echo ${REST_SERVER_URLS} | jq ". + {\"${BUSINESS_NETWORK_NAME}\":\"https://${REST_SERVER_URL}\"}")
     popd
 }
 
@@ -164,6 +168,46 @@ EOF
     popd
 }
 
+function deploy_apps {
+    for APP in ${APPS}
+    do
+        deploy_app ${APP}
+    done
+}
+
+function deploy_app {
+    APP=$1
+    if [ -f apps/${APP}/manifest.yml ]
+    then
+        deploy_cf_app ${APP}
+    elif [ -f apps/${APP}/Dockerfile ]
+    then
+        deploy_docker_app ${APP}
+    else
+        echo unrecognized app type ${APP}
+        exit 1
+    fi
+}
+
+function deploy_cf_app {
+    APP=$1
+    echo deploying cloud foundry app ${APP}
+    pushd apps/${APP}
+    cf push ${APP} -i 1 -m 128M --no-start
+    cf set-env ${APP} REST_SERVER_URLS "${REST_SERVER_URLS}"
+    cf bind-service ${APP} ${BLOCKCHAIN_SERVICE_INSTANCE} -c '{"permissions":"read-only"}'
+    cf start ${APP}
+    popd
+}
+
+function deploy_docker_app {
+    APP=$1
+    echo deploying docker app ${APP}
+    pushd apps/${APP}
+    echo cannot deploy docker apps just yet
+    popd
+}
+
 install_nodejs
 install_jq
 if [[ "${HAS_COMPOSER_CONTRACTS}" = "true" ]]
@@ -179,3 +223,4 @@ then
     create_blockchain_network_card
 fi
 deploy_contracts
+deploy_apps

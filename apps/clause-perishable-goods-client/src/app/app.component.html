@@ -1,0 +1,180 @@
+<div class="ui vertical stripe segment">
+    <div class="ui text container">
+        <h3 class="ui header" id="deploy">Deploy your Smart Legal Contract</h3>
+        <p>Before you can start you need to create your legal contract.</p>
+        <p>Don't worry the lawyers have already done the hard bit! Just click the button below and follow the instructions. We'll see you again in a few minutes!</p>
+        <a class="ui large button green">Draft your contract on Clause.io</a>
+        
+        <div class="ui divider"></div>
+        <h3 class="ui header" id="welcomeback">Welcome back!</h3>
+        <p>Do you have your URL now? Great! Just paste it in the box below and we'll do the rest for you.</p>
+        <div class="ui fluid icon input" [ngClass]="{'error': urlStatus === 'INVALID', 'loading': urlStatus === 'LOADING'}">
+            <input type="text" placeholder="Your execution URL from Clause"  [(ngModel)]="service.data.shipment.smartClause" (ngModelChange)="validateClauseURL($event)">
+            <i class="icon" [ngClass]="{'green': urlStatus === 'VALID', 'check': urlStatus === 'VALID'}"></i>
+        </div>
+        <div class="ui error message" [hidden]="urlStatus !== 'INVALID'">
+            <i class="close icon"></i>
+            <div class="header">
+            Oops, that doesn't look right.
+            </div>
+            Please step through the instructions on Clause.io carefully and then come back to try again.
+        </div>
+    </div>
+    
+</div>
+         
+<div class="ui basic segment">
+    <div class="ui three doubling special cards centered">
+            <div class="ui card blurring dimmable" [ngClass]="{'dimmed':service.data.shipment.status < service.Status.CREATED_PARTICIPANTS}">
+                <div class="ui dimmer"></div>
+                <div class="image">
+                    <img src="/assets/images/grower.jpg">
+                </div>
+
+                <div class="content">
+                    <a class="header">Grower</a>
+                    <div class="description">
+                        <div class="label">
+                                Account Balance
+                        </div>
+                        <div class="ui middle aligned selection list huge">
+                            <div class="item big">
+                                <i class="large dollar sign middle aligned icon"></i>
+                                <div class="content">
+                                    <div class="header">{{service.data.grower.accountBalance}}</div>
+                                </div>
+                            </div>
+                            <div class="item big"> </div>
+                        </div>                   
+                    </div>
+                </div>
+                <div class="extra content">
+                    <div class="ui two buttons">
+                    </div>
+                </div>
+            </div>
+            <div class="ui card blurring dimmable" [ngClass]="{'dimmed':service.data.shipment.status < service.Status.CREATING_SHIPMENT}">
+                <div class="ui dimmer"></div>
+                
+                <div class="image">
+                    <img src="/assets/images/port.jpg">
+                </div>
+                <div class="content">
+                    <div class="right floated meta">
+                        <div class="ui label green basic">
+                            {{service.statusString()}}
+                        </div>
+                    </div>
+                    <div class="header">Shipment</div>
+                    <div class="description">
+                        <div class="label">
+                            Current Readings
+                        </div>        
+                        <div class="ui label huge right floated">{{service.readingCounter}}</div>            
+                        <div class="ui middle aligned selection list huge">
+                            <div class="item">
+                                <i class="big thermometer half middle aligned icon"></i>
+                                <div class="content">
+                                    <div class="header">{{service.data.shipment.currentTemp}} &deg;C</div>
+                                </div>
+                            </div>
+                            <div class="item">
+                                <i class="big tint middle aligned icon"></i>
+                                <div class="content">
+                                    <div class="header">{{service.data.shipment.currentHumidity}} %</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="extra content "> 
+                    <div class="ui two buttons">
+                        <div class="ui green button" [ngClass]="{'disabled':service.data.shipment.status !== service.Status.IN_TRANSIT}" (click)="showAddReadingModal()">Add Sensor Reading</div>
+                    </div>
+                </div>
+            </div>
+            <div class="ui card blurring dimmable" [ngClass]="{'dimmed':service.data.shipment.status < service.Status.CREATED_PARTICIPANTS}" >
+                <div class="ui dimmer"></div>
+                
+
+                <div class="image">
+                        <img src="/assets/images/importer.jpg">
+                </div>
+                <div class="content">
+                    <a class="header">Importer</a>
+                    <div class="description">                       
+                        <div class="label">
+                            Account Balance
+                        </div>
+                        <div class="ui middle aligned selection list huge">
+                            <div class="item big">
+                                <i class="large dollar sign middle aligned icon"></i>
+                                <div class="content">
+                                    <div class="header">{{service.data.importer.accountBalance}}</div>
+                                </div>
+                            </div>
+                            <div class="item big"></div>
+                        </div>                                
+                    </div>
+                </div>
+                <div class="extra content">
+                    <div class="ui two buttons">
+                        <div class="ui blue button" [ngClass]="{'disabled':service.data.shipment.status !== service.Status.IN_TRANSIT}" (click)="service.sendReceived()">Accept Shipment</div>
+                    </div>
+                </div>
+            </div>
+        </div>      
+</div>
+
+<div class="ui modal" id='new-reading-modal'>
+    <i class="close icon"></i>
+    <div class="header">
+        New Sensor Reading
+    </div>
+    <div class="content">        
+        <div class="description">
+        <div class="ui header">We're guessing that you don't have a shipping container data logger to hand?</div>
+        <p>It's ok, we'll just simulate some data with the form below.</p>
+        <div class="label">Temperature</div>
+            <div class="ui right labeled input">
+            <input type="text" [(ngModel)]="service.data.shipment.currentTemp">
+            <div class="ui basic label">&deg;C</div>
+            </div>
+            <div class="label">Humidity</div>
+            <div class="ui right labeled input">
+            <input type="text" [(ngModel)]="service.data.shipment.currentHumidity">
+            <div class="ui basic label">%</div>
+            </div>     
+        </div>
+    </div>
+    <div class="actions">
+        <div class="ui black deny button">
+        Cancel
+        </div>
+        <div class="ui positive right labeled icon button" (click)="service.sendSensorReading()">
+        Add Readings
+        <i class="checkmark icon"></i>
+        </div>
+    </div>
+</div>
+<div class="ui divider"></div>
+<div class="ui basic segment">
+    <h2 class="ui header">Blockchain Overview</h2>
+    <div  class="ui eight cards doubling ">
+        <div *ngFor='let block of service.data.historian; let i = index' [attr.data-index]="i" class="ui blue card">
+            <div class="content">
+                <i class="right floated linkify icon"></i>
+                <div class="header">Block {{i}}</div>
+                <div class="meta">
+                    <span>{{fromNow(block.transactionTimestamp)}}</span>
+                </div>
+            </div>
+            <div class="extra content">
+            <div class="right hash">
+                {{block.transactionId}}
+            </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="ui divider"></div>
