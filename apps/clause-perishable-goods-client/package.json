@@ -25,12 +25,15 @@
     "@angular/platform-browser-dynamic": "^5.2.0",
     "@angular/router": "^5.2.0",
     "core-js": "^2.4.1",
+    "dotenv": "^5.0.1",
     "jquery": "^3.3.1",
     "less": "^2.7.3",
     "moment": "^2.22.1",
     "rxjs": "^5.5.6",
     "semantic-ui": "^2.3.1",
     "ts-node": "^4.1.0",
+    "typescript": "~2.5.3",
+    "yargs": "^11.0.0",
     "zone.js": "^0.8.19"
   },
   "devDependencies": {
@@ -41,7 +44,6 @@
     "@types/jasminewd2": "~2.0.2",
     "@types/node": "~6.0.60",
     "codelyzer": "^4.0.1",
-    "dotenv": "^5.0.1",
     "gulp": "^3.9.1",
     "http-server": "^0.11.1",
     "jasmine-core": "~2.8.0",
@@ -52,8 +54,6 @@
     "karma-jasmine": "~1.1.0",
     "karma-jasmine-html-reporter": "^0.2.2",
     "protractor": "~5.1.2",
-    "tslint": "~5.9.1",
-    "typescript": "~2.5.3",
-    "yargs": "^11.0.0"
+    "tslint": "~5.9.1"
   }
 }
