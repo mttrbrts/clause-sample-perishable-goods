@@ -15,13 +15,16 @@ export class AppComponent implements OnInit {
   title = 'Smart Legal Contracts with IBM Blockchain, by Clause';
   urlStatus = 'UNSET';
 
-  constructor(public service: ComposerPerishableGoodsService, private http: HttpClient) {}
+  setupStep = 0;
+  readingCounter = 0;
 
+  constructor(public service: ComposerPerishableGoodsService, private http: HttpClient) {}
 
   public validateClauseURL(event) {
     console.log('validing URL');
     this.urlStatus = 'LOADING';
-
+    $('#errorMessage').hide();
+    this.setupStep = 0;
     // Trim any extra whitespace
     this.service.data.shipment.smartClause = this.service.data.shipment.smartClause.trim();
 
@@ -33,6 +36,7 @@ export class AppComponent implements OnInit {
     }
 
     // Does it accept data?
+    this.setupStep += 1;
     const request = {
       '$class': 'org.accordproject.perishablegoods.ShipmentReceived',
       'unitCount': 3000,
@@ -68,17 +72,49 @@ export class AppComponent implements OnInit {
     };
 
     this.http.post(this.service.data.shipment.smartClause, request)
-    .subscribe(response => {
+    .subscribe(() => {
       this.urlStatus = 'VALID';
-      this.service.addShipment();
 
-    }, err => { this.urlStatus = 'INVALID'; });
+      // Test connectivity to IBM Blockchain Platform
+      this.setupStep += 1;
+      this.service.ping().subscribe(() => {
+        this.service.getHistorian();
+
+        // Create the Grower
+        this.setupStep += 1;
+        this.service.addParticipant('Grower').subscribe((grower) => {
+          this.service.data.grower = grower;
+          this.service.getHistorian();
+
+          // Create the Importer
+          this.setupStep += 1;
+          this.service.addParticipant('Importer').subscribe((importer) => {
+            this.service.data.importer = importer;
+            this.service.getHistorian();
+
+            // Create the Shipment
+            this.setupStep += 1;
+            this.service.addShipment().subscribe((shipment) => {
+              this.service.data.shipment.status = this.service.Status.IN_TRANSIT;
+              this.service.getHistorian();
+
+              this.setupStep += 1;
+            }, err => { this.service.handleError(err); this.setupStep *= -1; });
+          }, err => { this.service.handleError(err); this.setupStep *= -1; });
+        }, err => { this.service.handleError(err); this.setupStep *= -1; });
+      }, err => { this.service.handleError(err); this.setupStep *= -1; });
+    }, err => { this.service.handleError(err); this.setupStep *= -1; }
+  );
   }
+
 
   public sendReceived() {
-    this.service.sendReceived();
+    this.service.sendReceived().subscribe(data => {
+      this.service.data.shipment.status = this.service.Status.ARRIVED;
+      this.service.getParticipants();
+      this.service.getHistorian();
+    }, err => this.service.handleError(err));
   }
-
 
   public showAddReadingModal() {
     $('#new-reading-modal')
@@ -87,48 +123,12 @@ export class AppComponent implements OnInit {
   }
 
   public addReading() {
-    this.service.sendSensorReading();
+    this.service.sendSensorReading().subscribe(data => {
+      this.service.getHistorian();
+      this.setupStep += 1;
+      this.readingCounter += 1;
+    }, err => this.service.handleError(err));
   }
-
-  // public addShipmentModal() {
-  //   $('#newShipmentForm-id').val(this.service.generateId());
-  //   $('#newShipmentForm-modal').modal('show');
-  // }
-
-  // public addImporterModal() {
-  //   $('#newImporterForm-id').val(this.service.generateEmail());
-  //   $('#newImporterForm-modal').modal('show');
-  // }
-
-  // public addGrowerModal() {
-  //   $('#newGrowerForm-id').val(this.service.generateEmail());
-  //   $('#newGrowerForm-modal').modal('show');
-  // }
-
-    //
-  //   resetDemo();
-  //   ping();
-
-  //   $('#newTemp').range({
-  //     min: -20,
-  //     max: 60,
-  //     start: newTemp,
-  //     onChange: function(val) {
-  //       newTemp = val;
-  //       $('#display-temp').html(val);
-  //     }
-  //   });
-
-  //   $('#newHumidity').range({
-  //     min: 0,
-  //     max: 100,
-  //     start: newHumidity,
-  //     onChange: function(val) {
-  //       newHumidity = val;
-  //       $('#display-humidity').html(val);
-  //     }
-  //   });
-
 
   public fromNow(date) {
     return moment(date).fromNow();
@@ -166,6 +166,6 @@ export class AppComponent implements OnInit {
     );
 
     this.service.ping();
-    this.service.setupDemo();
+    $('#errorMessage').hide();
   }
 }

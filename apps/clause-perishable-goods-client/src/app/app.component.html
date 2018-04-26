@@ -8,7 +8,7 @@
         <div class="ui divider"></div>
         <h3 class="ui header" id="welcomeback">Welcome back!</h3>
         <p>Do you have your URL now? Great! Just paste it in the box below and we'll do the rest for you.</p>
-        <div class="ui fluid icon input" [ngClass]="{'error': urlStatus === 'INVALID', 'loading': urlStatus === 'LOADING'}">
+        <div class="ui fluid icon input" [ngClass]="{'error': urlStatus === 'INVALID', 'loading': urlStatus === 'LOADING','disabled': urlStatus === 'VALID'}">
             <input type="text" placeholder="Your execution URL from Clause"  [(ngModel)]="service.data.shipment.smartClause" (ngModelChange)="validateClauseURL($event)">
             <i class="icon" [ngClass]="{'green': urlStatus === 'VALID', 'check': urlStatus === 'VALID'}"></i>
         </div>
@@ -19,13 +19,42 @@
             </div>
             Please step through the instructions on Clause.io carefully and then come back to try again.
         </div>
+        <div class="ui small centered list">
+            <a class="item">
+                <i class="icon" [ngClass]="{'minus': setupStep === 0, 'times': setupStep === -1, 'red': setupStep === -1, 'check': setupStep >= 2, 'green': setupStep >= 2}"></i>
+                <div class="content"><div class="description">Does your contract look good?</div></div>
+            </a>
+            <a class="item">
+                <i class="icon" [ngClass]="{'minus': setupStep >= 0 && setupStep <= 2, 'times': setupStep === -2, 'red': setupStep === -2, 'check': setupStep >= 3, 'green': setupStep >= 3}"></i>
+                <div class="content"><div class="description">Is your Blockchain is up?</div></div>
+            </a>
+            <a class="item">
+                <i class="icon" [ngClass]="{'minus': setupStep >= 0 && setupStep <=3, 'times': setupStep === -3, 'red': setupStep === -3, 'check': setupStep >= 4, 'green': setupStep >= 4}"></i>
+                <div class="content"><div class="description">Invited the grower to the Blockchain network</div></div>
+            </a>
+            <a class="item">
+                <i class="icon" [ngClass]="{'minus': setupStep >= 0 && setupStep <=4, 'times': setupStep === -4, 'red': setupStep === -4, 'check': setupStep >= 5, 'green': setupStep >= 5}"></i>
+                <div class="content"><div class="description">Invited the importer to the Blockchain network</div></div>
+            </a>
+            <a class="item">
+                <i class="icon" [ngClass]="{'minus': setupStep >= 0 && setupStep <= 5, 'times': setupStep === -5, 'red': setupStep === -5, 'check': setupStep >= 6, 'green': setupStep >= 6}"></i>
+                <div class="content"><div class="description">Added the Shipment to the the Blockchain</div></div>
+            </a>
+        </div>
+        <div class="ui error message" id="errorMessage">
+            <i class="close icon"></i>
+            <div class="header">
+            Uh oh! Something went wrong.
+            </div>
+            <div class="description"></div>
+        </div>
     </div>
     
 </div>
          
 <div class="ui basic segment">
     <div class="ui three doubling special cards centered">
-            <div class="ui card blurring dimmable" [ngClass]="{'dimmed':service.data.shipment.status < service.Status.CREATED_PARTICIPANTS}">
+            <div class="ui card blurring dimmable" [ngClass]="{'dimmed':setupStep < 4}">
                 <div class="ui dimmer"></div>
                 <div class="image">
                     <img src="/assets/images/grower.jpg">
@@ -53,7 +82,7 @@
                     </div>
                 </div>
             </div>
-            <div class="ui card blurring dimmable" [ngClass]="{'dimmed':service.data.shipment.status < service.Status.CREATING_SHIPMENT}">
+            <div class="ui card blurring dimmable" [ngClass]="{'dimmed':setupStep < 6}">
                 <div class="ui dimmer"></div>
                 
                 <div class="image">
@@ -70,7 +99,7 @@
                         <div class="label">
                             Current Readings
                         </div>        
-                        <div class="ui label huge right floated">{{service.readingCounter}}</div>            
+                        <div class="ui label huge right floated">{{readingCounter}}</div>            
                         <div class="ui middle aligned selection list huge">
                             <div class="item">
                                 <i class="big thermometer half middle aligned icon"></i>
@@ -89,11 +118,11 @@
                 </div>
                 <div class="extra content "> 
                     <div class="ui two buttons">
-                        <div class="ui green button" [ngClass]="{'disabled':service.data.shipment.status !== service.Status.IN_TRANSIT}" (click)="showAddReadingModal()">Add Sensor Reading</div>
+                        <div class="ui green button" [ngClass]="{'disabled':setupStep < 6}" (click)="showAddReadingModal()">Add Sensor Reading</div>
                     </div>
                 </div>
             </div>
-            <div class="ui card blurring dimmable" [ngClass]="{'dimmed':service.data.shipment.status < service.Status.CREATED_PARTICIPANTS}" >
+            <div class="ui card blurring dimmable" [ngClass]="{'dimmed':setupStep < 5}" >
                 <div class="ui dimmer"></div>
                 
 
@@ -119,7 +148,7 @@
                 </div>
                 <div class="extra content">
                     <div class="ui two buttons">
-                        <div class="ui blue button" [ngClass]="{'disabled':service.data.shipment.status !== service.Status.IN_TRANSIT}" (click)="service.sendReceived()">Accept Shipment</div>
+                        <div class="ui blue button" [ngClass]="{'disabled':setupStep !== 7}" (click)="sendReceived()">Accept Shipment</div>
                     </div>
                 </div>
             </div>
@@ -151,7 +180,7 @@
         <div class="ui black deny button">
         Cancel
         </div>
-        <div class="ui positive right labeled icon button" (click)="service.sendSensorReading()">
+        <div class="ui positive right labeled icon button" (click)="addReading()">
         Add Readings
         <i class="checkmark icon"></i>
         </div>
