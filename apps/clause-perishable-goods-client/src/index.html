@@ -11,68 +11,15 @@
 </head>
 <body>
 
-<!-- Following Menu -->
-<!-- <div class="ui large top fixed hidden menu">
-  <div class="ui container">
-    <a class="active item">Home</a>
-    <a class="item">Work</a>
-    <a class="item">Company</a>
-    <a class="item">Careers</a>
-    <div class="right menu">
-      <div class="item">
-        <a class="ui button">Log in</a>
-      </div>
-      <div class="item">
-        <a class="ui primary button">Sign Up</a>
-      </div>
-    </div>
-  </div>
-</div> -->
-
-<!-- Sidebar Menu -->
-<!-- <div class="ui vertical inverted sidebar menu">
-  <a class="active item">Home</a>
-  <a class="item">Work</a>
-  <a class="item">Company</a>
-  <a class="item">Careers</a>
-  <a class="item">Login</a>
-  <a class="item">Signup</a>
-</div> -->
-
-
-<!-- Page Contents -->
 <div class="pusher">
   <div class="ui inverted vertical masthead center aligned segment">
-
-    <!-- <div class="ui container">
-      <div class="ui large secondary inverted pointing menu">
-        <a class="toc item">
-          <i class="sidebar icon"></i>
-        </a>
-        <a class="active item">Home</a>
-        <a class="item">Work</a>
-        <a class="item">Company</a>
-        <a class="item">Careers</a>
-        <div class="right item">
-          <a class="ui inverted button">Log in</a>
-          <a class="ui inverted button">Sign Up</a>
-        </div>
-      </div>
-    </div> -->
-
     <div class="ui text container">
-      <!-- <h1 class="ui inverted header">
-        Imagine-a-Company
-      </h1> -->
       <img src="assets/images/logo.png" class="logo"/>
       <h2>Connected Contracting.</h2>
-
       <h3>'Perishable Goods' Demonstration, powered by <a href="https://www.ibm.com/blockchain/platform/">IBM Blockchain Platform</a></h3>
-      <a href="#intro"><div class="ui big primary button">Get Started <i class="right arrow icon"></i></div></a>
+      <a href="#intro" class="page-scroll"><div class="ui big primary right labeled icon button">Get Started <i class="caret down icon"></i></div></a>
     </div>
-
   </div>
-
   <div class="ui vertical stripe segment" id="intro">
     <div class="ui middle aligned stackable grid container">
       <div class="row">
@@ -91,6 +38,7 @@
             <p>Greater traceability and transparency in the sourcing, production, and distribution value chain will reduce costs, risks, and inefficiencies. Further, the terms and conditions, standards and rules associated with a supply chain extend the paper trail.</p>
             <p>A <em>Smart Clause</em><sup>TM</sup> enables contract automation to reduce your admin effort but still retains the legal strength of your agreements.</p>
             <p>Follow the instructions below to create your agreement with Clause, then bind it to a supply-chain network running on IBM Blockchain Platform. You will submit sensors readings for storage on the blockchain and see the resulting balance updates for two supply chain network participants.</p>
+            <a href="#deploy" class="page-scroll"><div class="ui big primary right labeled icon button">Run the demo<i class="caret down icon"></i></div></a>
           </div>
         </div>
     </div>
@@ -99,21 +47,27 @@
   <!-- Page Contents-->
   <app-root></app-root>
           
-  <div class="ui vertical stripe segment">
+  <div class="ui vertical stripe segment" id="next">
     <div class="ui text container">
       <h3 class="ui header">All done? So what next?</h3>
       <p>You can take a look at our <a href='https://github.com/clauseHQ/clause-ibp-perishable-goods'>Hyperledger Composer project</a> to understand how we store the sensor readings on chain.</p>
-      <p>We've also published the <a href='#'>source code for the legal contract</a> too. This is based on another great <emphasis>open-source</emphasis> initiative from the <a href='https://accordproject.org'>Accord Project</a>.</p>
-      <a class="ui large labeled icon button"><i class="github icon"></i>Fork me on GitHub</a><a class="ui large button" href='https://accordproject.org'>Join the Accord Project</a>
+      <p>We've also published the <a href='https://github.com/accordproject/cicero-template-library/tree/master/perishable-goods'>source code for the legal contract</a> too. This is based on another great <emphasis>open-source</emphasis> initiative from the <a href='https://accordproject.org'>Accord Project</a>.</p>
+      <a class="ui large button" href='https://accordproject.org'>Join the Accord Project</a>
     </div>    
   </div>
 
-  <div class="ui vertical stripe segment" id="intro">
+  <div class="ui vertical stripe segment" id="next">
+    <div class="ui text container">
+      <iframe style="max-width:560px;max-height:315px" src="https://www.youtube.com/embed/cmmq-JBMbbQ?rel=0&amp;controls=0&amp;showinfo=0" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    </div>    
+  </div>
+
+  <div class="ui vertical stripe segment">
       <div class="ui middle aligned stackable grid container">
         <div class="ui text container">
           <h3 class="ui header">Shh! Not all smart contracts run on a blockchain</h3>
           <p>We love Blockchain, but sometimes we can do better without one. Talk to us about your smart legal contract use case.</p>
-          <a class="ui large button">Contact Clause</a>
+          <a class="ui large button" href="mailto:hello@clause.io">Contact Clause</a>
         </div>
       </div>
     </div>

@@ -35,12 +35,26 @@ export class ComposerPerishableGoodsService {
     },
     importer: {
       email: 'importer' + this.generateEmail(),
-      accountBalance: 3000,
+      accountBalance: 10000,
     },
     historian: []
   };
 
   blockHeight = -1;
+
+  public reset() {
+    this.blockHeight = -1;
+    this.data.shipment.shipmentId = this.generateId();
+    this.data.shipment.sensorReadings = [];
+    this.data.grower = {
+      email: 'grower' + this.generateEmail(),
+      accountBalance: 0,
+    };
+    this.data.importer = {
+      email: 'importer' + this.generateEmail(),
+      accountBalance: 10000,
+    };
+  }
 
   public handleError(error: HttpErrorResponse) {
     if (error.error instanceof ErrorEvent) {
@@ -70,14 +84,6 @@ export class ComposerPerishableGoodsService {
     }
     return 'FAILED';
   }
-
-  // public setupDemo() {
-  //   this.data.importer = this.addParticipant('Importer', () => {
-  //     this.data.grower = this.addParticipant('Grower', () => {
-  //       this.data.shipment.status = this.Status.CREATED_PARTICIPANTS;
-  //     });
-  //   });
-  // }
 
   public addParticipant(type) {
     let participant;
@@ -166,7 +172,7 @@ export class ComposerPerishableGoodsService {
         }
 
         this.data.historian = (<Array<any>>data).sort(compare);
-        this.data.historian.splice(0, this.blockHeight - 1);
+        this.data.historian.splice(0, this.blockHeight);
       },
       err => {
         this.handleError(err);

@@ -15,28 +15,39 @@ export class AppComponent implements OnInit {
   title = 'Smart Legal Contracts with IBM Blockchain, by Clause';
   urlStatus = 'UNSET';
 
-  setupStep = 0;
+  step = 0;
   readingCounter = 0;
+
+  CLAUSE_API_REGEX = /https:\/\/api\.clause\.io\/api\/clauses\/([0-9a-z]{24})\/execute\?access_token=[0-9a-zA-Z]{64}/g;
 
   constructor(public service: ComposerPerishableGoodsService, private http: HttpClient) {}
 
+  public reset() {
+    this.step = 0;
+    this.readingCounter = 0;
+    this.service.reset();
+    this.validateClauseURL(null);
+  }
+
   public validateClauseURL(event) {
     console.log('validing URL');
-    this.urlStatus = 'LOADING';
-    $('#errorMessage').hide();
-    this.setupStep = 0;
-    // Trim any extra whitespace
-    this.service.data.shipment.smartClause = this.service.data.shipment.smartClause.trim();
 
-    // Does it match the regex pattern?
-    const regex = /https:\/\/api\.clause\.io\/api\/clauses\/[0-9a-z]{24}\/execute\?access_token=[0-9a-zA-Z]{64}/g;
-    if (regex.exec(this.service.data.shipment.smartClause) === null) {
-      this.urlStatus = 'INVALID';
-      return;
+    if (this.urlStatus === 'UNSET') {
+      this.urlStatus = 'LOADING';
+      $('#errorMessage').hide();
+
+      // Trim any extra whitespace
+      this.service.data.shipment.smartClause = this.service.data.shipment.smartClause.trim();
+
+      // Does it match the regex pattern?
+      if (this.CLAUSE_API_REGEX.exec(this.service.data.shipment.smartClause) === null) {
+        this.urlStatus = 'INVALID';
+        return;
+      }
     }
 
     // Does it accept data?
-    this.setupStep += 1;
+    this.step += 1;
     const request = {
       '$class': 'org.accordproject.perishablegoods.ShipmentReceived',
       'unitCount': 3000,
@@ -76,43 +87,48 @@ export class AppComponent implements OnInit {
       this.urlStatus = 'VALID';
 
       // Test connectivity to IBM Blockchain Platform
-      this.setupStep += 1;
+      this.step += 1;
       this.service.ping().subscribe(() => {
         this.service.getHistorian();
 
         // Create the Grower
-        this.setupStep += 1;
+        this.step += 1;
         this.service.addParticipant('Grower').subscribe((grower) => {
           this.service.data.grower = grower;
           this.service.getHistorian();
 
           // Create the Importer
-          this.setupStep += 1;
+          this.step += 1;
           this.service.addParticipant('Importer').subscribe((importer) => {
             this.service.data.importer = importer;
             this.service.getHistorian();
-
-            // Create the Shipment
-            this.setupStep += 1;
-            this.service.addShipment().subscribe((shipment) => {
-              this.service.data.shipment.status = this.service.Status.IN_TRANSIT;
-              this.service.getHistorian();
-
-              this.setupStep += 1;
-            }, err => { this.service.handleError(err); this.setupStep *= -1; });
-          }, err => { this.service.handleError(err); this.setupStep *= -1; });
-        }, err => { this.service.handleError(err); this.setupStep *= -1; });
-      }, err => { this.service.handleError(err); this.setupStep *= -1; });
-    }, err => { this.service.handleError(err); this.setupStep *= -1; }
+            this.step += 1;
+          }, err => { this.service.handleError(err); this.step *= -1; });
+        }, err => { this.service.handleError(err); this.step *= -1; });
+      }, err => { this.service.handleError(err); this.step *= -1; });
+    }, err => { this.service.handleError(err); this.step *= -1; }
   );
   }
 
+
+  public addShipment() {
+    this.service.addShipment().subscribe((shipment) => {
+      this.service.data.shipment.status = this.service.Status.IN_TRANSIT;
+      this.service.getHistorian();
+
+      this.step = 6;
+    }, err => { this.service.handleError(err); this.step *= -1; });
+  }
 
   public sendReceived() {
     this.service.sendReceived().subscribe(data => {
       this.service.data.shipment.status = this.service.Status.ARRIVED;
       this.service.getParticipants();
       this.service.getHistorian();
+      this.step = 8;
+      $('html, body').stop().animate({
+          scrollTop: ($('#complete').offset().top - 400)
+      }, 1250, 'easeInOutExpo');
     }, err => this.service.handleError(err));
   }
 
@@ -125,13 +141,34 @@ export class AppComponent implements OnInit {
   public addReading() {
     this.service.sendSensorReading().subscribe(data => {
       this.service.getHistorian();
-      this.setupStep += 1;
       this.readingCounter += 1;
     }, err => this.service.handleError(err));
   }
 
   public fromNow(date) {
     return moment(date).fromNow();
+  }
+
+  public extractTypeFromFQType(fqt) {
+    const xs = fqt.split('.');
+    return xs[xs.length - 1];
+  }
+
+
+
+  public draftedContract() {
+    this.step = 1;
+  }
+
+  public buildChecklistStyle(step) {
+    return {
+      'minus': this.step >= 0 && this.step < step,
+      'times': this.step === -(step),
+      'red': this.step === -(step),
+      'check': this.step > step,
+      'green': this.step > step,
+      'spin spinner': this.step === step,
+    };
   }
 
   public ngOnInit() {
@@ -164,6 +201,15 @@ export class AppComponent implements OnInit {
           $('.ui.checkbox').checkbox();
       }
     );
+
+    // jQuery for page scrolling feature - requires jQuery Easing plugin
+    $('a.page-scroll').bind('click', function(event) {
+      const $anchor = $(this);
+      $('html, body').stop().animate({
+          scrollTop: ($($anchor.attr('href')).offset().top - 50)
+      }, 1250, 'easeInOutExpo');
+      event.preventDefault();
+    });
 
     this.service.ping();
     $('#errorMessage').hide();
