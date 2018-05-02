@@ -25,24 +25,20 @@
             <div class="ui small centered list">
                 <a class="item">
                     <i class="icon" [ngClass]="buildChecklistStyle(1)"></i>
-                    <div class="content"><div class="description">Does your contract look good?</div></div>
+                    <div class="content"><div class="description">Your contract looks good</div></div>
                 </a>
                 <a class="item">
                     <i class="icon" [ngClass]="buildChecklistStyle(2)"></i>
-                    <div class="content"><div class="description">Is your Blockchain is up?</div></div>
+                    <div class="content"><div class="description">Your Blockchain is up</div></div>
                 </a>
                 <a class="item">
                     <i class="icon" [ngClass]="buildChecklistStyle(3)"></i>
-                    <div class="content"><div class="description">Invited the grower to the Blockchain network</div></div>
+                    <div class="content"><div class="description">Grower invited to the Blockchain network</div></div>
                 </a>
                 <a class="item">
                     <i class="icon" [ngClass]="buildChecklistStyle(4)"></i>
-                    <div class="content"><div class="description">Invited the importer to the Blockchain network</div></div>
+                    <div class="content"><div class="description">Importer invited to the Blockchain network</div></div>
                 </a>
-                <!-- <a class="item">
-                    <i class="icon" [ngClass]="{'minus': step >= 0 && step <= 5, 'times': step === -5, 'red': step === -5, 'check': step >= 6, 'green': step >= 6}"></i>
-                    <div class="content"><div class="description">Added the Shipment to the the Blockchain</div></div>
-                </a> -->
             </div>
             <div class="ui error message" id="errorMessage">
                 <i class="close icon"></i>
@@ -160,7 +156,7 @@
     </div>
     <div class="ui vertical secondary segment">
         <div class="ui container">
-            <h2 class="ui header">Blockchain Overview</h2>
+            <h2 class="ui header">Blockchain Transactions</h2>
             <div  class="ui six cards doubling ">
                 <div *ngFor="let block of service.data.historian; let i = index;" [attr.data-index]="i" class="ui blue card">
                     <div class="content">
@@ -217,9 +213,8 @@
         <div class="ui black deny button">
         Cancel
         </div>
-        <div class="ui positive right labeled icon button" (click)="addReading()">
+        <div class="ui positive button" (click)="addReading()">
         Add Readings
-        <i class="checkmark icon"></i>
         </div>
     </div>
 </div>
